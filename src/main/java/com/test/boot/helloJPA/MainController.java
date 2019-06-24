@@ -1,5 +1,6 @@
 package com.test.boot.helloJPA;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -18,27 +19,51 @@ public class MainController {
     //@RequestMapping(method = RequestMethod.GET.path="/all")
     //@GetMapping(path = "/all")
     //@GetMapping(path = "/")
+    /*
     @GetMapping
     public Iterable<Person> getAllPersons() {
         return personRepository.findAll();
-    }
-    @GetMapping(path = "/json")
-    public CustomResponse getAllPersonsJSON() {
-        return personRepository.findAll();
+    }*/
+    @GetMapping(path = "/")
+    public CustomResponse getAllPersons() throws IOException{
+        CustomResponse cr = new CustomResponse();
+        Iterable<Person> ip = personRepository.findAll();
+        if (ip != null){
+            cr.setData(ip);
+            cr.setSuccess(true);
+            cr.setMessage("Hay personas");
+        }else {
+            cr.setData(null);
+            cr.setSuccess(false);
+            cr.setMessage("No hay personas");
+        }
+        return cr;
     }
 
     //BUSCA: GET
     @GetMapping(path = "/{id}")
-    public  Person getPerson(
+    public  CustomResponse getPerson(
             HttpServletResponse response,
             @PathVariable(name="id") Integer id) throws IOException {
         Optional<Person> p = personRepository.findById(id);
-        if(p.isPresent()) {
-            return p.get();
+        CustomResponse cr = new CustomResponse();
+        cr.setData(null);
+        cr.setSuccess(false);
+        cr.setMessage("No hay personas");
+        if (p.isPresent()) {
+            Person person = p.get();
+            if (person != null) {
+                cr.setData(person);
+                cr.setSuccess(true);
+                cr.setMessage("Hay personas");
+            }
+            response.setStatus(201);
+        } else {
+            response.sendError(404, "Id no encontrado");
         }
-        response.sendError(404, "Id no encontrado");
-        return null;
+        return cr;
     }
+
     //AÑADIR UNO: POST
     //@PostMapping(path = "/add")
     @PostMapping
