@@ -1,6 +1,7 @@
 package com.test.boot.helloJPA;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,71 +26,55 @@ public class MainController {
         return personRepository.findAll();
     }*/
     @GetMapping
-    public CustomResponse getPersons() throws IOException{
+    public CustomResponse getPersons(HttpServletResponse response) throws IOException{
         CustomResponse cr = new CustomResponse();
-        Iterable<Person> ip = personRepository.findAll();
-        if (ip != null){
-            cr.setData(ip);
-            cr.setSuccess(true);
-            cr.setMessage(null);
-        }else {
-            cr.setData(null);
-            cr.setSuccess(false);
-            cr.setMessage("No hay personas");
-        }
-        return cr;
+        Iterable<Person> lista = personRepository.findAll();
+        cr.setData(lista);
+        cr.setSuccess(true);
+        cr.setMessage(null);
+        return new CustomResponse(null,true,lista);
     }
 
 
     @GetMapping(path = "/{id}")
     public  CustomResponse getPerson(
             HttpServletResponse response,
-            @PathVariable(name="id") Integer id) throws IOException {
-        Optional<Person> p = personRepository.findById(id);
-        if (p.isPresent()) {
-            Person person = p.get();
+            @PathVariable Integer id) throws IOException {
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
             response.setStatus(201);
-            return new CustomResponse(null,true,p);
-        }
-        response.sendError(404, "Id no encontrado");
-        return new CustomResponse("No encontrado",false,null);
+            return new CustomResponse(null,true,person);
     }
 
     //AÑADIR UNO: POST
     //@PostMapping(path = "/add")
     @PostMapping
-    public  Person addPerson(
+    public  CustomResponse addPerson(
             HttpServletResponse response,
-            @RequestBody        Person p
-           //RequestParam String lastName,
-           //RequestParam String email,
-           //RequestParam Integer edad,
-           //RequestParam Collection<Phone> phones
+            @Validated @RequestBody Person p
     ) throws IOException{
-
         personRepository.save(p);
         response.setStatus(201);
-        response.setHeader("location","/person/"+ p.getId());
-        return p;
+        //response.setHeader("location","/person/"+ p.getId());
+        return new CustomResponse(null,true,p);
     }
     @PutMapping(path = "/{id}")
     public  Object updatePerson(
             HttpServletResponse response,
             @PathVariable Integer id,
-            @RequestBody  Person up
-
-
+            @Validated @RequestBody  Person p
     ) throws IOException {
-        Person np = personRepository.findById(id)
+        Person person = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
-        np.setEdad(up.getEdad());
-        np.setEmail(up.getEmail());
-        np.setFirstName(up.getFirstName());
-        np.setLastName(up.getLastName());
-        np.setPhones(up.getPhones());
-        personRepository.save(np);
+        person.setEdad(p.getEdad());
+        person.setEmail(p.getEmail());
+        person.setFirstName(p.getFirstName());
+        person.setLastName(p.getLastName());
+        person.setCompany(p.getCompany());
+        //person.setPhones(p.getPhones());
+        personRepository.save(person);
         response.setStatus(200);
-        return np;
+        return person;
 
     }
     //BORRA: DELETE
@@ -102,7 +87,7 @@ public class MainController {
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
         personRepository.delete(operson);
         response.setStatus(204);
-        return new CustomResponse(null,true,operson);
+        return new CustomResponse(null,true,null);
     }
 
     //PHONES
@@ -132,13 +117,14 @@ public class MainController {
     @PostMapping(path="/{id}/phones")
     public  CustomResponse addPhone(
             HttpServletResponse response,
-            @PathVariable Integer id, @RequestBody Phone newphone
+            @PathVariable Integer id,
+            @Validated @RequestBody Phone newphone
     ) throws IOException{
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
             phoneRepository.save(newphone);
             response.setStatus(201);
-            return new CustomResponse(null,true,person.getPhones());
+            return new CustomResponse(null,true, person.getPhones());
     }
 
     //actualizaPhone
@@ -146,7 +132,7 @@ public class MainController {
     public  Object updatePhone(
             HttpServletResponse response,
             @PathVariable Integer id,
-            @RequestBody Phone newphone
+            @Validated @RequestBody Phone newphone
     ) throws IOException {
         Phone phone = getPhoneIfExist(id, newphone.getId(), newphone.getTipo(), newphone.getNumber());
         phoneRepository.save(phone);
@@ -160,7 +146,7 @@ public class MainController {
     public  Object deletePhone(
             HttpServletResponse response,
             @PathVariable Integer id,
-            @RequestBody Phone uphone
+            @Validated @RequestBody Phone uphone
 
     ) throws IOException {
 

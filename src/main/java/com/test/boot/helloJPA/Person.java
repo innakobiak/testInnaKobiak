@@ -1,6 +1,10 @@
 package com.test.boot.helloJPA;
 
+import org.springframework.format.annotation.NumberFormat;
+
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -8,13 +12,25 @@ import java.util.LinkedHashSet;
 
 @Entity
 public class Person {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
+    @NotEmpty
     private String firstName;
+
+    @NotEmpty
     private String lastName;
+
+    @Email
     private String email;
+
+    @Min(value=18)
+    @Max(value=99)
     private Integer edad;
+
+    @NotEmpty
     private String company;
 
 
@@ -85,6 +101,7 @@ public class Person {
     public void setCompany(String company) {
         this.company = company;
     }
+
 
     @Override
     public String toString() {

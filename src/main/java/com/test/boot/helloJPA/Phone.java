@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 
 @Entity
@@ -11,7 +12,9 @@ public class Phone {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+    @NotEmpty
     private String tipo;
+    @NotEmpty
     private String number;
     @ManyToOne
     @JsonIgnore
