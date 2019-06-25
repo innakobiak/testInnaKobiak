@@ -121,7 +121,7 @@ public class MainController {
 
     //PHONES
     @GetMapping(path="/{id}/phones")
-    public CustomResponse getPhones(
+    public CustomResponse recuperaPhones(
             HttpServletResponse response,
             @PathVariable Integer id) throws IOException {
         Person pp = new Person(id);
@@ -130,7 +130,7 @@ public class MainController {
         return new CustomResponse(null,true,lista);
     }
     @GetMapping(path="/{id}/phones/{phoneId}")
-    public CustomResponse getPhone(
+    public CustomResponse recuperaPhone(
             HttpServletResponse response,
             @PathVariable Integer id,
             @PathVariable Integer phoneId
@@ -153,16 +153,14 @@ public class MainController {
             @RequestParam String tipo,
             @RequestParam String number
     ) throws IOException{
-        Optional<Person> p = personRepository.findById(id);
-        if (p.isPresent()) {
-
+        Optional<Person> operson = personRepository.findById(id);
+        if (operson.isPresent()) {
             Phone phone = new Phone();
             phone.setNumber(number);
             phone.setTipo(tipo);
-            Person person = p.get();
+            Person person = operson.get();
             phone.setPerson(person);
             phoneRepository.save(phone);
-
             response.setStatus(201);
             return new CustomResponse(null,true,person.getPhones());
         }
@@ -182,17 +180,18 @@ public class MainController {
     ) throws IOException {
 
         Person person = new Person(id);
-        Optional<Phone> p = phoneRepository.findByPersonAndId(person,phoneId);
-        if (p.isPresent()) {
-            Phone phone = p.get();
+        Optional<Phone> ophone = phoneRepository.findByPersonAndId(person,phoneId);
+        if (ophone.isPresent()) {
+            Phone phone = ophone.get();
             phone.setNumber(number);
             phone.setTipo(tipo);
             phone.setPerson(person);
             phoneRepository.save(phone);
             response.setStatus(200);
-            return new CustomResponse(null, true, p.get());
+            return new CustomResponse(null, true, ophone.get());
         }
-        throw new PersonNotFoundExcception(id);
+        throw new PhoneNotFoundExcception(phoneId);
+
 
     }
 
@@ -219,8 +218,8 @@ public class MainController {
             return new CustomResponse(null, true, p.get());
         }
         //response.sendError(404, "No encontrado");
-        return new CustomResponse("No encontrado",false,null);
-
+        //return new CustomResponse("No encontrado",false,null);
+        throw new PhoneNotFoundExcception(phoneId);
     }
 
 }
