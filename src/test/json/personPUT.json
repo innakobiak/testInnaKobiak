@@ -4,12 +4,16 @@
     "email":"migaaa2@gmail.com",
     "lastName":"Miguel2",
     "edad": 53,
-    "company": "BBB",
-    "phones":{
-        "phone": {
-            "tipo": "Personal",
-            "number": 653009988
-        }
-    }
+    "company": "BBB"
 }
 
+//permitimos convention HAL con starter spring-boot-starter-data-rest
+/*http://localhost:8080/api/phones/15*/
+{
+    "id": 1,
+    "firstName":"Miguel2",
+    "email":"migaaa2@gmail.com",
+    "lastName":"Miguel2",
+    "edad": 56,
+    "company": "BBB"
+}
