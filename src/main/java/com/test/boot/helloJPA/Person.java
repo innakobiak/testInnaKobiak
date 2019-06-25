@@ -15,17 +15,21 @@ public class Person {
     private String lastName;
     private String email;
     private Integer edad;
+    private String company;
 
-    public Person() {
-    }
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn (name="person_id")
     private Collection<Phone> phones = new LinkedHashSet<Phone>();
 
+
+    public Person() {
+    }
+
     public Person(Integer id){
         this.id = id;
     }
+
     public String getFirstName() {
         return firstName;
     }
@@ -72,6 +76,14 @@ public class Person {
 
     public void setPhones(Collection<Phone> phones) {
         this.phones = phones;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     @Override

@@ -114,9 +114,9 @@ public class MainController {
             HttpServletResponse response,
             @PathVariable  Integer id
     ) throws IOException {
-        Person p = personRepository.findById(id)
+        Person operson = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
-        return new CustomResponse(null,true,p);
+        return new CustomResponse(null,true,operson);
     }
 
     //PHONES
@@ -135,14 +135,15 @@ public class MainController {
             @PathVariable Integer id,
             @PathVariable Integer phoneId
     ) throws IOException {
+        Person operson = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        Phone phone = phoneRepository.findByPersonAndId(new Person(id),phoneId)
+                .orElseThrow(() -> new PhoneNotFoundExcception(phoneId));
+        response.setStatus(200);
+        return new CustomResponse(null, true, phone);
 
-        Optional<Phone> phone = phoneRepository.findByPersonAndId(new Person(id),phoneId);
-        if (phone.isPresent()) {
-            response.setStatus(200);
-            return new CustomResponse(null, true, phone.get());
-        }
         //response.sendError(404, "No encontrado");
-        return new CustomResponse("No encontrado",false,null);
+        //return new CustomResponse("No encontrado",false,null);
     }
 
     //add phone
@@ -153,20 +154,17 @@ public class MainController {
             @RequestParam String tipo,
             @RequestParam String number
     ) throws IOException{
-        Optional<Person> operson = personRepository.findById(id);
-        if (operson.isPresent()) {
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
             Phone phone = new Phone();
             phone.setNumber(number);
             phone.setTipo(tipo);
-            Person person = operson.get();
             phone.setPerson(person);
             phoneRepository.save(phone);
             response.setStatus(201);
             return new CustomResponse(null,true,person.getPhones());
-        }
         //response.setStatus(404);
         //return new CustomResponse("Error",true,null);
-        throw new PersonNotFoundExcception(id);
     }
 
     //actualizaPhone
@@ -178,20 +176,10 @@ public class MainController {
             @RequestParam String tipo,
             @RequestParam String number
     ) throws IOException {
-
-        Person person = new Person(id);
-        Optional<Phone> ophone = phoneRepository.findByPersonAndId(person,phoneId);
-        if (ophone.isPresent()) {
-            Phone phone = ophone.get();
-            phone.setNumber(number);
-            phone.setTipo(tipo);
-            phone.setPerson(person);
-            phoneRepository.save(phone);
-            response.setStatus(200);
-            return new CustomResponse(null, true, ophone.get());
-        }
-        throw new PhoneNotFoundExcception(phoneId);
-
+        Phone phone = comprobarSiExiste(id, phoneId, tipo, number);
+        phoneRepository.save(phone);
+        response.setStatus(200);
+        return new CustomResponse(null, true, phone);
 
     }
 
@@ -205,21 +193,24 @@ public class MainController {
             @RequestParam String number
     ) throws IOException {
 
-        // TODO : hacerlo
-        Person person = new Person(id);
-        Optional<Phone> p = phoneRepository.findByPersonAndId(person,phoneId);
-        if (p.isPresent()) {
-            Phone phone = p.get();
-            phone.setNumber(number);
-            phone.setTipo(tipo);
-            phone.setPerson(person);
-            phoneRepository.delete(phone);
-            response.setStatus(204);
-            return new CustomResponse(null, true, p.get());
-        }
+        Phone phone = comprobarSiExiste(id, phoneId, tipo, number);
+        phoneRepository.delete(phone);
+        response.setStatus(204);
+        return new CustomResponse(null, true, phone);
         //response.sendError(404, "No encontrado");
         //return new CustomResponse("No encontrado",false,null);
-        throw new PhoneNotFoundExcception(phoneId);
+
+    }
+
+    private Phone comprobarSiExiste(@PathVariable Integer id, @PathVariable Integer phoneId, @RequestParam String tipo, @RequestParam String number) throws IOException{
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        Phone phone = phoneRepository.findByPersonAndId(new Person(id), phoneId)
+                .orElseThrow(() -> new PhoneNotFoundExcception(phoneId));
+        phone.setNumber(number);
+        phone.setTipo(tipo);
+        phone.setPerson(person);
+        return phone;
     }
 
 }
