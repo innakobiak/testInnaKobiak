@@ -2,6 +2,7 @@ package com.test.boot.helloJPA;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -227,5 +228,19 @@ public class MainController {
         dir.setPerson(person);
         return dir;
     }
+
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public CustomResponse handleValidationException(
+            HttpServletResponse resp,
+            MethodArgumentNotValidException e
+
+    ){
+            resp.setStatus(400);
+            return new CustomResponse(
+                    e.getLocalizedMessage(), e.getBindingResult().getAllErrors(), false, null);
+    }
+
+
 }
 

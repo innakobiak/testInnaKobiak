@@ -2,6 +2,9 @@ package com.test.boot.helloJPA;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.validation.ObjectError;
+
+import java.util.List;
 
 public class CustomResponse {
     private Boolean success;
@@ -22,6 +25,12 @@ public class CustomResponse {
     public CustomResponse(String message, Boolean success) {
         this.message = message;
         this.success = success;
+    }
+
+    public CustomResponse(String localizedMessage, List<ObjectError> allErrors, boolean b, Object o) {
+        this.message = localizedMessage;
+        this.success = success;
+        this.data = o;
     }
 
     public String getMessage() {

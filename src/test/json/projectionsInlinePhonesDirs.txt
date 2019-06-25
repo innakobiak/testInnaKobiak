@@ -1,7 +1,6 @@
 
 //permitimos convention HAL con starter spring-boot-starter-data-rest
 GET
-/*http://localhost:8080/api/phones/15*/
+http://localhost:8080/api/phones/15
 
-/*http://localhost:8080/api/persons/1/dirs??projection=inlineDirs*/
-/*http://localhost:8080/api/persons/1?projection=inlinePhonesDirs*/
+http://localhost:8080/api/persons/1?projection=inlinePhonesDirs

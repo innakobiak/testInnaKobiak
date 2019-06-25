@@ -31,6 +31,7 @@ public class Person {
     private Integer edad;
 
     @NotEmpty
+    @Pattern(regexp = "^v")
     private String company;
 
 
