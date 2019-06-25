@@ -103,7 +103,7 @@ public class MainController {
             @PathVariable Integer id,
             @PathVariable Integer phoneId
     ) throws IOException {
-        personRepository.findById(id)
+        Person operson = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
         Phone phone = phoneRepository.findByPersonAndId(operson,phoneId)
                 .orElseThrow(() -> new PhoneNotFoundExcception(phoneId));
