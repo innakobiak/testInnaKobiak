@@ -38,6 +38,9 @@ public class Person {
     @JoinColumn (name="person_id")
     private Collection<Phone> phones = new LinkedHashSet<Phone>();
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn (name="person_id")
+    private Collection<Direccion> dirs = new LinkedHashSet<Direccion>();
 
     public Person() {
     }
@@ -86,6 +89,15 @@ public class Person {
         this.id = id;
     }
 
+
+    public Collection<Direccion> getDirs() {
+        return dirs;
+    }
+
+    public void setDirs(Collection<Direccion> dirs) {
+        this.dirs = dirs;
+    }
+
     public Collection<Phone> getPhones() {
         return phones;
     }
@@ -111,7 +123,9 @@ public class Person {
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", edad=" + edad +
-                ", phones=" + phones.toString() +
+                ", company='" + company + '\'' +
+                ", phones=" + phones!= null?phones.toString() :""+
+                ", dirs=" + dirs!= null?dirs.toString() :""+
                 '}';
     }
 }
