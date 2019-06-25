@@ -17,12 +17,10 @@ public class MainController {
     private PersonRepository personRepository;
     @Autowired
     private PhoneRepository phoneRepository;
+    @Autowired
+    private DirRepository dirRepository;
 
-    /*
-    @GetMapping
-    public Iterable<Person> getAllPersons() {
-        return personRepository.findAll();
-    }*/
+    /* TODO: PERSON*/
     @GetMapping
     public CustomResponse getPersons(HttpServletResponse response) throws IOException{
         CustomResponse cr = new CustomResponse();
@@ -32,7 +30,6 @@ public class MainController {
         cr.setMessage(null);
         return new CustomResponse(null,true,lista);
     }
-
 
     @GetMapping(path = "/{id}")
     public  CustomResponse getPerson(
@@ -44,8 +41,6 @@ public class MainController {
             return new CustomResponse(null,true,person);
     }
 
-    //AÑADIR UNO: POST
-    //@PostMapping(path = "/add")
     @PostMapping
     public  CustomResponse addPerson(
             HttpServletResponse response,
@@ -75,7 +70,6 @@ public class MainController {
         return person;
 
     }
-    //BORRA: DELETE
     @DeleteMapping(path = "/{id}")
     public CustomResponse deletePerson(
             HttpServletResponse response,
@@ -88,7 +82,7 @@ public class MainController {
         return new CustomResponse(null,true,null);
     }
 
-    //PHONES
+    /* TODO: PHONES*/
     @GetMapping(path="/{id}/phones")
     public CustomResponse recuperaPhones(
             HttpServletResponse response,
@@ -110,8 +104,6 @@ public class MainController {
         response.setStatus(200);
         return new CustomResponse(null, true, phone);
     }
-
-    //add phone
     @PostMapping(path="/{id}/phones")
     public  CustomResponse addPhone(
             HttpServletResponse response,
@@ -125,7 +117,6 @@ public class MainController {
             return new CustomResponse(null,true, person.getPhones());
     }
 
-    //actualizaPhone
     @PutMapping(path="/{id}/phones/{phoneId}")
     public  Object updatePhone(
             HttpServletResponse response,
@@ -138,14 +129,11 @@ public class MainController {
         return new CustomResponse(null, true, phone);
 
     }
-
-    //borraOnePhone
     @DeleteMapping(path="/{id}/phones/{phoneId}")
     public  Object deletePhone(
             HttpServletResponse response,
             @PathVariable Integer id,
             @Validated @RequestBody Phone uphone
-
     ) throws IOException {
 
         Phone phone = getPhoneIfExist(id, uphone.getId(), uphone.getTipo(), uphone.getNumber());
@@ -154,6 +142,69 @@ public class MainController {
         return new CustomResponse(null, true, phone);
 
     }
+
+
+    /* TODO: DIRS*/
+    @GetMapping(path="/{id}/dirs")
+    public CustomResponse recuperaDirecciones(
+            HttpServletResponse response,
+            @PathVariable Integer id) throws IOException {
+        List<Direccion> lista = dirRepository.findByPerson(new Person(id));
+        response.setStatus(201);
+        return new CustomResponse(null,true, lista);
+    }
+    @GetMapping(path="/{id}/dirs/{dirId}")
+    public CustomResponse recuperaDireccion(
+            HttpServletResponse response,
+            @PathVariable Integer id,
+            @PathVariable Integer dirId
+    ) throws IOException {
+        Person operson = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        Direccion dir = dirRepository.findByPersonAndId(operson,dirId)
+                .orElseThrow(() -> new DirNotFoundExcception(dirId));
+        response.setStatus(200);
+        return new CustomResponse(null, true, dir);
+    }
+    @PostMapping(path="/{id}/dirs")
+    public  CustomResponse addDireccion(
+            HttpServletResponse response,
+            @PathVariable Integer id,
+            @Validated @RequestBody Direccion ndir
+    ) throws IOException{
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        dirRepository.save(ndir);
+        response.setStatus(201);
+        return new CustomResponse(null,true, person.getDirs());
+    }
+
+    @PutMapping(path="/{id}/dirs/{dirId}")
+    public  Object updatePhone(
+            HttpServletResponse response,
+            @PathVariable Integer id,
+            @Validated @RequestBody Direccion ndir
+    ) throws IOException {
+        Direccion dir = getDirIfExist(id, ndir.getId(), ndir.getTipo(), ndir.getNumero());
+        dirRepository.save(dir);
+        response.setStatus(200);
+        return new CustomResponse(null, true, dir);
+
+    }
+    @DeleteMapping(path="/{id}/dirs/{dirId}")
+    public  Object deleteDireccion(
+            HttpServletResponse response,
+            @PathVariable Integer id,
+            @Validated @RequestBody Direccion ndir
+    ) throws IOException {
+
+        Direccion dir = getDirIfExist(id, ndir.getId(), ndir.getTipo(), ndir.getNumero());
+        dirRepository.delete(dir);
+        response.setStatus(204);
+        return new CustomResponse(null, true, dir);
+
+    }
+
 
     private Phone getPhoneIfExist(@PathVariable Integer id, @PathVariable Integer phoneId, @RequestParam String tipo, @RequestParam String number) throws IOException{
         Person person = personRepository.findById(id)
@@ -166,5 +217,15 @@ public class MainController {
         return phone;
     }
 
+    private Direccion getDirIfExist(@PathVariable Integer id, @PathVariable Integer dirId, @RequestParam String tipo, @RequestParam String numero) throws IOException{
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        Direccion dir = dirRepository.findByPersonAndId(new Person(id), dirId)
+                .orElseThrow(() -> new PhoneNotFoundExcception(dirId));
+        dir.setNumero(numero);
+        dir.setTipo(tipo);
+        dir.setPerson(person);
+        return dir;
+    }
 }
 

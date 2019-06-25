@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 //@RepositoryRestResource(path = "personas", excerptProjection = InlinePhones.class)
-@RepositoryRestResource( excerptProjection = InlinePhones.class)
+@RepositoryRestResource( excerptProjection = InlinePhonesDirs.class)
 public interface PersonRepository extends CrudRepository<Person,Integer> {
 }

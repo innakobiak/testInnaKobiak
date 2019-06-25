@@ -5,12 +5,14 @@ import org.springframework.data.rest.core.config.Projection;
 
 import java.util.Collection;
 
-@Projection(name="inlinePhones", types={Person.class})
-public interface InlinePhones {
+@Projection(name="inlinePhonesDirs", types={Person.class})
+public interface InlinePhonesDirs {
     String getFirstName();
     String getLastName();
     String getCompany();
     Collection<Phone> getPhones();
     @Value("#{target.firstName} #{target.lastName}")
     String getFullName();
+    Collection<Direccion> getDirs();
+
 }
