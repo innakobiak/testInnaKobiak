@@ -18,8 +18,6 @@ public class MainController {
     @Autowired
     private PhoneRepository phoneRepository;
 
-    //@GetMapping(path = "/all")
-    //@GetMapping(path = "/")
     /*
     @GetMapping
     public Iterable<Person> getAllPersons() {
@@ -105,9 +103,9 @@ public class MainController {
             @PathVariable Integer id,
             @PathVariable Integer phoneId
     ) throws IOException {
-        Person operson = personRepository.findById(id)
+        personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
-        Phone phone = phoneRepository.findByPersonAndId(new Person(id),phoneId)
+        Phone phone = phoneRepository.findByPersonAndId(operson,phoneId)
                 .orElseThrow(() -> new PhoneNotFoundExcception(phoneId));
         response.setStatus(200);
         return new CustomResponse(null, true, phone);
