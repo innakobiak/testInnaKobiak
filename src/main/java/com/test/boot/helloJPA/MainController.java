@@ -1,14 +1,10 @@
 package com.test.boot.helloJPA;
 
-import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,19 +60,13 @@ public class MainController {
     @PostMapping
     public  Person addPerson(
             HttpServletResponse response,
-            @RequestParam String firstName,
-            @RequestParam String lastName,
-            @RequestParam String email,
-            @RequestParam Integer edad,
-            @RequestParam Collection<Phone> phones
+            @RequestBody        Person p
+           //RequestParam String lastName,
+           //RequestParam String email,
+           //RequestParam Integer edad,
+           //RequestParam Collection<Phone> phones
     ) throws IOException{
 
-        Person p = new Person();
-        p.setFirstName(firstName);
-        p.setLastName(lastName);
-        p.setEmail(email);
-        p.setEdad(edad);
-        p.setPhones(phones);
         personRepository.save(p);
         response.setStatus(201);
         response.setHeader("location","/person/"+ p.getId());
@@ -85,28 +75,22 @@ public class MainController {
     @PutMapping(path = "/{id}")
     public  Object updatePerson(
             HttpServletResponse response,
-            @PathVariable(name="id")  Integer id,
-            @RequestParam String firstName,
-            @RequestParam String lastName,
-            @RequestParam String email,
-            @RequestParam Integer edad,
-            @RequestParam Collection<Phone> phones
+            @PathVariable Integer id,
+            @RequestBody  Person up
+
 
     ) throws IOException {
-        Optional<Person> p = personRepository.findById(id);
-        if(p.isPresent()) {
-            Person np = p.get();
-            np.setEdad(edad);
-            np.setEmail(email);
-            np.setFirstName(firstName);
-            np.setLastName(lastName);
-            np.setPhones(phones);
-            personRepository.save(np);
-            response.setStatus(201);
-            return p;
-        }
-        response.sendError(404, "Id no encontrado");
-        return null;
+        Person np = personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundExcception(id));
+        np.setEdad(up.getEdad());
+        np.setEmail(up.getEmail());
+        np.setFirstName(up.getFirstName());
+        np.setLastName(up.getLastName());
+        np.setPhones(up.getPhones());
+        personRepository.save(np);
+        response.setStatus(200);
+        return np;
+
     }
     //BORRA: DELETE
     @DeleteMapping(path = "/{id}")
@@ -116,6 +100,8 @@ public class MainController {
     ) throws IOException {
         Person operson = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
+        personRepository.delete(operson);
+        response.setStatus(204);
         return new CustomResponse(null,true,operson);
     }
 
@@ -124,10 +110,9 @@ public class MainController {
     public CustomResponse recuperaPhones(
             HttpServletResponse response,
             @PathVariable Integer id) throws IOException {
-        Person pp = new Person(id);
-        List<Phone> lista = phoneRepository.findByPerson(pp);
+        List<Phone> lista = phoneRepository.findByPerson(new Person(id));
         response.setStatus(201);
-        return new CustomResponse(null,true,lista);
+        return new CustomResponse(null,true, lista);
     }
     @GetMapping(path="/{id}/phones/{phoneId}")
     public CustomResponse recuperaPhone(
@@ -141,30 +126,19 @@ public class MainController {
                 .orElseThrow(() -> new PhoneNotFoundExcception(phoneId));
         response.setStatus(200);
         return new CustomResponse(null, true, phone);
-
-        //response.sendError(404, "No encontrado");
-        //return new CustomResponse("No encontrado",false,null);
     }
 
     //add phone
     @PostMapping(path="/{id}/phones")
     public  CustomResponse addPhone(
             HttpServletResponse response,
-            @PathVariable Integer id,
-            @RequestParam String tipo,
-            @RequestParam String number
+            @PathVariable Integer id, @RequestBody Phone newphone
     ) throws IOException{
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
-            Phone phone = new Phone();
-            phone.setNumber(number);
-            phone.setTipo(tipo);
-            phone.setPerson(person);
-            phoneRepository.save(phone);
+            phoneRepository.save(newphone);
             response.setStatus(201);
             return new CustomResponse(null,true,person.getPhones());
-        //response.setStatus(404);
-        //return new CustomResponse("Error",true,null);
     }
 
     //actualizaPhone
@@ -172,11 +146,9 @@ public class MainController {
     public  Object updatePhone(
             HttpServletResponse response,
             @PathVariable Integer id,
-            @PathVariable Integer phoneId,
-            @RequestParam String tipo,
-            @RequestParam String number
+            @RequestBody Phone newphone
     ) throws IOException {
-        Phone phone = comprobarSiExiste(id, phoneId, tipo, number);
+        Phone phone = getPhoneIfExist(id, newphone.getId(), newphone.getTipo(), newphone.getNumber());
         phoneRepository.save(phone);
         response.setStatus(200);
         return new CustomResponse(null, true, phone);
@@ -188,21 +160,18 @@ public class MainController {
     public  Object deletePhone(
             HttpServletResponse response,
             @PathVariable Integer id,
-            @PathVariable Integer phoneId,
-            @RequestParam String tipo,
-            @RequestParam String number
+            @RequestBody Phone uphone
+
     ) throws IOException {
 
-        Phone phone = comprobarSiExiste(id, phoneId, tipo, number);
+        Phone phone = getPhoneIfExist(id, uphone.getId(), uphone.getTipo(), uphone.getNumber());
         phoneRepository.delete(phone);
         response.setStatus(204);
         return new CustomResponse(null, true, phone);
-        //response.sendError(404, "No encontrado");
-        //return new CustomResponse("No encontrado",false,null);
 
     }
 
-    private Phone comprobarSiExiste(@PathVariable Integer id, @PathVariable Integer phoneId, @RequestParam String tipo, @RequestParam String number) throws IOException{
+    private Phone getPhoneIfExist(@PathVariable Integer id, @PathVariable Integer phoneId, @RequestParam String tipo, @RequestParam String number) throws IOException{
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new PersonNotFoundExcception(id));
         Phone phone = phoneRepository.findByPersonAndId(new Person(id), phoneId)
