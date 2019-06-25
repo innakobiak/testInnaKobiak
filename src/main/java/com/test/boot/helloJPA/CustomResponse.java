@@ -1,11 +1,14 @@
 package com.test.boot.helloJPA;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class CustomResponse {
-    private String message;
     private Boolean success;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object data;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String message;
 
     public CustomResponse() {
     }
