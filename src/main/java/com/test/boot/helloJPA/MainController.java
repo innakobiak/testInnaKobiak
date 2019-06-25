@@ -181,8 +181,17 @@ public class MainController {
             @RequestParam String number
     ) throws IOException {
 
-        Object p = recuperaPhone(response, id, phoneId, tipo, number);
-        if (p != null) return p;
+        Person person = new Person(id);
+        Optional<Phone> p = phoneRepository.findByPersonAndId(person,phoneId);
+        if (p.isPresent()) {
+            Phone phone = p.get();
+            phone.setNumber(number);
+            phone.setTipo(tipo);
+            phone.setPerson(person);
+            phoneRepository.save(phone);
+            response.setStatus(200);
+            return new CustomResponse(null, true, p.get());
+        }
         throw new PersonNotFoundExcception(id);
 
     }
@@ -197,26 +206,21 @@ public class MainController {
             @RequestParam String number
     ) throws IOException {
 
-        Object p1 = recuperaPhone(response, id, phoneId, tipo, number);
-        if (p1 != null) return p1;
-        //response.sendError(404, "No encontrado");
-        return new CustomResponse("No encontrado",false,null);
-
-    }
-
-    private Object recuperaPhone(HttpServletResponse response, @PathVariable Integer id, @PathVariable Integer phoneId, @RequestParam String tipo, @RequestParam String number) {
+        // TODO : hacerlo
         Person person = new Person(id);
-        Optional<Phone> p = phoneRepository.findByPersonAndId(person, phoneId);
+        Optional<Phone> p = phoneRepository.findByPersonAndId(person,phoneId);
         if (p.isPresent()) {
             Phone phone = p.get();
             phone.setNumber(number);
             phone.setTipo(tipo);
             phone.setPerson(person);
-            phoneRepository.save(phone);
-            response.setStatus(200);
+            phoneRepository.delete(phone);
+            response.setStatus(204);
             return new CustomResponse(null, true, p.get());
         }
-        return null;
+        //response.sendError(404, "No encontrado");
+        return new CustomResponse("No encontrado",false,null);
+
     }
 
 }
